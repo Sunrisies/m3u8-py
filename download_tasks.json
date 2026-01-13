@@ -11,7 +11,7 @@
     },
     {
         "name": "sample_video2",
-        "url": "https://example.com/video2.m3u8",
+        "url": "https://europe.olemovienews.com/ts4/20260112/m6n0j03o/mp4/m6n0j03o.mp4/index-v1-a1.m3u8",
         "output_dir": "./output/sample_video2",
         "params": {
             "quality": "720p",
@@ -21,7 +21,7 @@
     },
     {
         "name": "sample_video3",
-        "url": "https://example.com/video3.m3u8",
+        "url": "https://europe.olemovienews.com/ts4/20260111/eve6ozs0/mp4/eve6ozs0.mp4/index-v1-a1.m3u8",
         "output_dir": "./output/sample_video3",
         "params": {
             "quality": "480p",

@@ -214,7 +214,8 @@ class StreamDownloadManager:
             remaining_urls = [url for url in ts_files if url not in downloaded]
             
             if remaining_urls:
-                print(f"⬇️  开始下载 {len(remaining_urls)} 个文件...\n")
+                total_count = len(remaining_urls)
+                print(f"⬇️  开始下载 {total_count} 个文件...\n")
                 
                 # 逐个下载（流式）
                 success_count = 0
@@ -225,14 +226,20 @@ class StreamDownloadManager:
                         break
                     
                     filename = self._extract_filename(url)
-                    print(f"\n[{i}/{len(remaining_urls)}] ", end="")
+                    remaining = total_count - (success_count + fail_count) - 1
+                    print(f"\n[{i}/{total_count}] 剩余: {remaining} ", end="")
                     
                     success = self.download_file_stream(url, task_temp_dir, filename, task.name)
                     
                     if success:
                         success_count += 1
+                        # 下载成功时显示剩余数量
+                        remaining_now = total_count - success_count - fail_count
+                        print(f" ✅ 成功! 剩余: {remaining_now}", end="")
                     else:
                         fail_count += 1
+                        remaining_now = total_count - success_count - fail_count
+                        print(f" ❌ 失败! 剩余: {remaining_now}", end="")
                 
                 print(f"\n\n📊 下载结果: {success_count} 成功, {fail_count} 失败")
                 
@@ -273,7 +280,7 @@ class StreamDownloadManager:
                 self.logger.error(f"任务 {task.name} 执行出错: {e}")
             return False
     
-    def download_batch_tasks(self, tasks: List[DownloadTask], max_concurrent: int = 3) -> Dict[str, bool]:
+    def download_batch_tasks(self, tasks: List[DownloadTask], max_concurrent: int = 6) -> Dict[str, bool]:
         """
         批量下载多个任务（支持可控并发）
         
@@ -512,13 +519,14 @@ class AdvancedM3U8Downloader:
         self.manager = StreamDownloadManager(self.config)
         self.task_loader = JSONTaskLoader()
     
-    def download_from_json(self, json_file: str, base_output_dir: str = "./output") -> bool:
+    def download_from_json(self, json_file: str, base_output_dir: str = "./output", max_concurrent: int = 3) -> bool:
         """
         从JSON文件下载多个任务
         
         Args:
             json_file: JSON配置文件路径
             base_output_dir: 基础输出目录
+            max_concurrent: 最大并发任务数
             
         Returns:
             bool: 是否所有任务成功
@@ -534,7 +542,7 @@ class AdvancedM3U8Downloader:
             print(f"📋 加载了 {len(tasks)} 个任务")
             
             # 执行批量下载
-            results = self.manager.download_batch_tasks(tasks)
+            results = self.manager.download_batch_tasks(tasks, max_concurrent)
             
             # 检查结果
             success_count = sum(1 for v in results.values() if v)
